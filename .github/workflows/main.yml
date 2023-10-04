@@ -1,0 +1,16 @@
+name: Demo Github Action
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-22.04
+    container:
+      image: node:18
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install & Tests
+        run: npm install && npm test
