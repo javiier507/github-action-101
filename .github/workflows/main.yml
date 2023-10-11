@@ -4,9 +4,6 @@ name: Demo Github Action
         branches:
             - dev
             - master
-    push:
-        branches:
-            - dev
 jobs:
     test:
         runs-on: ubuntu-22.04
@@ -21,6 +18,7 @@ jobs:
                     echo DRIVE_DISK=${{ vars.DRIVE_DISK }} >> .env
             -   name: Install & Tests
                 run: npm install && npm test
+
     delivery:
         runs-on: ubuntu-22.04
         needs: test
@@ -57,6 +55,7 @@ jobs:
 #                    docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
 
     deploy-dev:
+        if: github.ref == 'refs/heads/dev'
         runs-on: ubuntu-22.04
         needs: delivery
         environment:
@@ -72,6 +71,7 @@ jobs:
         steps:
             -   name: E2E Test
                 run: echo "E2E Test in Dev!"
+
     deploy-staging:
         runs-on: ubuntu-22.04
         needs: e2e-dev
@@ -81,6 +81,7 @@ jobs:
         steps:
             -   name: Deploy
                 run: echo "Deploy in Staging!"
+
     e2e-staging:
         runs-on: ubuntu-22.04
         needs: deploy-staging
