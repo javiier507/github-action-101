@@ -3,6 +3,9 @@ name: Demo Github Action
     pull_request:
         branches:
             - master
+        types:
+            - opened
+            - closed
     push:
         tags:
             - 'v*.*.*'
