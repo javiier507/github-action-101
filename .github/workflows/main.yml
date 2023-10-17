@@ -58,6 +58,14 @@ jobs:
 #
 #                    docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
 
+    release:
+        runs-on: ubuntu-22.04
+        if:  startsWith(github.head_ref, 'release/dev')
+        needs: delivery
+        steps:
+            - name: Print Release
+              run: echo "This is a release to dev"
+
     deploy-dev:
         runs-on: ubuntu-22.04
         needs: delivery
