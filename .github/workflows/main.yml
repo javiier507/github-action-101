@@ -6,9 +6,7 @@ name: Demo Github Action
         types:
             - opened
             - closed
-    push:
-        tags:
-            - 'v*.*.*'
+
 jobs:
     test:
         runs-on: ubuntu-22.04
@@ -18,33 +16,32 @@ jobs:
             PORT: ${{ vars.PORT }}
             APP_KEY: ${{ vars.APP_KEY }}
             DRIVE_DISK: ${{ vars.DRIVE_DISK }}
+        outputs:
+            version: ${{ steps.versioning.outputs.version }}
         steps:
             -   uses: actions/checkout@v2
             -   name: Install & Tests
                 run: npm install && npm test
+            -   id: versioning
+                run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
     delivery:
         runs-on: ubuntu-22.04
         needs: test
         env:
             IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
-            IMAGE_VERSION: $GITHUB_SHA
+            IMAGE_VERSION: ${{ needs.test.outputs.version }}
         steps:
             -   uses: actions/checkout@v2
-            -   name: Docker Login
-                run: >-
-                    docker login -u ${{ secrets.DOCKER_USER }} -p ${{
-                    secrets.DOCKER_PASSWORD }}
-            -   name: Set Name and Version for Dev and Staging
-                if: ${{ github.event_name == 'pull_request' }}
+            -   name: Set Image Name for Dev and Staging
+                if: github.head_ref == 'release/dev'
                 run: |
                     echo "IMAGE_NAME=${{ env.IMAGE_NAME }}-dev" >> $GITHUB_ENV
-            -   name: Set Name and Version for Production
-                if: startsWith(github.ref, 'refs/tags/v')
-                run: |
-                    echo "IMAGE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
             -   name: Print Name and Version
                 run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
+            -   name: Docker Login
+                run: |
+                    docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
 #            -   name: Docker Build
 #                run: 'docker build -t ${{ env.IMAGE_NAME }} .'
 #            -   name: Docker Tag
@@ -58,18 +55,10 @@ jobs:
 #
 #                    docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
 
-    release:
-        runs-on: ubuntu-22.04
-        needs: delivery
-        if:  github.head_ref == 'release/dev'
-        steps:
-            - name: Print Release
-              run: echo "This is a release to dev"
-
     deploy-dev:
         runs-on: ubuntu-22.04
         needs: delivery
-        if: ${{ github.event_name == 'pull_request' }}
+        if: github.head_ref == 'release/dev'
         environment:
             name: Dev
             url: 'https://environment.dev'
