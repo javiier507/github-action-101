@@ -61,7 +61,7 @@ jobs:
     release:
         runs-on: ubuntu-22.04
         needs: delivery
-        if:  github.ref == 'refs/head/release/dev'
+        if:  github.head_ref == 'release/dev'
         steps:
             - name: Print Release
               run: echo "This is a release to dev"
