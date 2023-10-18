@@ -33,10 +33,11 @@ jobs:
             IMAGE_VERSION: ${{ needs.test.outputs.version }}
         steps:
             -   uses: actions/checkout@v2
-            -   name: Set Image Name for Dev and Staging
-                if: github.head_ref == 'release/dev'
+            -   name: Set Image Name and Version for Dev and Staging
+                if: github.head_ref != 'release/prod'
                 run: |
                     echo "IMAGE_NAME=${{ env.IMAGE_NAME }}-dev" >> $GITHUB_ENV
+                    echo "IMAGE_VERSION=$GITHUB_SHA" >> $GITHUB_ENV
             -   name: Print Name and Version
                 run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
             -   name: Docker Login
@@ -58,7 +59,7 @@ jobs:
     deploy-dev:
         runs-on: ubuntu-22.04
         needs: delivery
-        if: github.head_ref == 'release/dev'
+        if: github.head_ref != 'release/prod'
         environment:
             name: Dev
             url: 'https://environment.dev'
