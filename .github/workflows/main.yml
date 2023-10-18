@@ -79,7 +79,7 @@ jobs:
         if: github.event.pull_request.merged == true
         environment:
             name: Staging
-            url: 'https://environment.dev'
+            url: 'https://environment.staging'
         steps:
             -   name: Deploy
                 run: echo "Deploy in Staging!"
@@ -91,3 +91,14 @@ jobs:
         steps:
             -   name: E2E Test
                 run: echo "E2E Test in Staging!"
+
+    deploy-prod:
+        runs-on: ubuntu-22.04
+        needs: delivery
+        if: github.head_ref == 'release/prod'
+        environment:
+            name: Production
+            url: 'https://environment.prod'
+        steps:
+            -   name: Deploy
+                run: echo "Deploy in Production!"
