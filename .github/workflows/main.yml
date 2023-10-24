@@ -1,105 +1,109 @@
 name: Demo Github Action
 'on':
-    pull_request:
-        branches:
-            - master
-        types:
-            - opened
-            - closed
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - closed
 
 jobs:
-    test:
-        runs-on: ubuntu-22.04
-        container:
-            image: 'node:18'
-        env:
-            PORT: ${{ vars.PORT }}
-            APP_KEY: ${{ vars.APP_KEY }}
-            DRIVE_DISK: ${{ vars.DRIVE_DISK }}
-        outputs:
-            version: ${{ steps.versioning.outputs.version }}
-        steps:
-            -   uses: actions/checkout@v2
-            -   name: Install & Tests
-                run: npm install && npm test
-            -   id: versioning
-                run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+  test:
+    runs-on: ubuntu-22.04
+    container:
+      image: 'node:18'
+    env:
+      PORT: ${{ vars.PORT }}
+      APP_KEY: ${{ vars.APP_KEY }}
+      DRIVE_DISK: ${{ vars.DRIVE_DISK }}
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install & Tests
+        run: npm install && npm test
+      - id: versioning
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-    delivery:
-        runs-on: ubuntu-22.04
-        needs: test
-        env:
-            IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
-            IMAGE_VERSION: ${{ needs.test.outputs.version }}
-        steps:
-            -   uses: actions/checkout@v2
-            -   name: Set Image Name and Version for Dev and Staging
-                if: github.head_ref != 'release/prod'
-                run: |
-                    echo "IMAGE_NAME=${{ env.IMAGE_NAME }}-dev" >> $GITHUB_ENV
-                    echo "IMAGE_VERSION=$GITHUB_SHA" >> $GITHUB_ENV
-            -   name: Print Name and Version
-                run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
-            -   name: Docker Login
-                run: |
-                    docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
-#            -   name: Docker Build
-#                run: 'docker build -t ${{ env.IMAGE_NAME }} .'
-#            -   name: Docker Tag
-#                run: >
-#                    docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
-#
-#                    docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
-#            -   name: Docker Push
-#                run: >
-#                    docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
-#
-#                    docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
-
-    deploy-dev:
-        runs-on: ubuntu-22.04
-        needs: delivery
-        if: github.head_ref != 'release/prod'
-        environment:
-            name: Dev
-            url: 'https://environment.dev'
-        steps:
-            -   name: Deploy
-                run: echo "Deploy in Dev!"
-    e2e-dev:
-        runs-on: ubuntu-22.04
-        needs: deploy-dev
-        environment: Dev
-        steps:
-            -   name: E2E Test
-                run: echo "E2E Test in Dev!"
-
-    deploy-staging:
-        runs-on: ubuntu-22.04
-        needs: e2e-dev
-        if: github.event.pull_request.merged == true
-        environment:
-            name: Staging
-            url: 'https://environment.staging'
-        steps:
-            -   name: Deploy
-                run: echo "Deploy in Staging!"
-
-    e2e-staging:
-        runs-on: ubuntu-22.04
-        needs: deploy-staging
-        environment: Staging
-        steps:
-            -   name: E2E Test
-                run: echo "E2E Test in Staging!"
-
-    deploy-prod:
-        runs-on: ubuntu-22.04
-        needs: delivery
+  delivery:
+    runs-on: ubuntu-22.04
+    needs: test
+    env:
+      IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
+      IMAGE_VERSION: ${{ needs.test.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Tag
         if: github.head_ref == 'release/prod'
-        environment:
-            name: Production
-            url: 'https://environment.prod'
-        steps:
-            -   name: Deploy
-                run: echo "Deploy in Production!"
+        run: |
+          if [ $(git tag -l ${{ env.IMAGE_VERSION }}) ]; then echo "Ya existe una version ${{ env.IMAGE_VERSION }} etiquetada"; exit 1; fi
+      - name: Set Image Name and Version for Dev and Staging
+        if: github.head_ref != 'release/prod'
+        run: |
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}-dev" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$GITHUB_SHA" >> $GITHUB_ENV
+      - name: Print Name and Version
+        run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
+#      - name: Docker Login
+#        run: |
+#          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
+#      - name: Docker Build
+#        run: 'docker build -t ${{ env.IMAGE_NAME }} .'
+#      - name: Docker Tag
+#        run: >
+#          docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+#
+#          docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
+#      - name: Docker Push
+#        run: >
+#          docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
+#
+#          docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy-dev:
+    runs-on: ubuntu-22.04
+    needs: delivery
+    if: github.head_ref != 'release/prod'
+    environment:
+      name: Dev
+      url: 'https://environment.dev'
+    steps:
+      - name: Deploy
+        run: echo "Deploy in Dev!"
+  e2e-dev:
+    runs-on: ubuntu-22.04
+    needs: deploy-dev
+    environment: Dev
+    steps:
+      - name: E2E Test
+        run: echo "E2E Test in Dev!"
+
+  deploy-staging:
+    runs-on: ubuntu-22.04
+    needs: e2e-dev
+    if: github.event.pull_request.merged == true
+    environment:
+      name: Staging
+      url: 'https://environment.staging'
+    steps:
+      - name: Deploy
+        run: echo "Deploy in Staging!"
+
+  e2e-staging:
+    runs-on: ubuntu-22.04
+    needs: deploy-staging
+    environment: Staging
+    steps:
+      - name: E2E Test
+        run: echo "E2E Test in Staging!"
+
+  deploy-prod:
+    runs-on: ubuntu-22.04
+    needs: delivery
+    if: github.head_ref == 'release/prod'
+    environment:
+      name: Production
+      url: 'https://environment.prod'
+    steps:
+      - name: Deploy
+        run: echo "Deploy in Production!"
