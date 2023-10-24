@@ -36,6 +36,7 @@ jobs:
       - name: Check Tag
         if: github.head_ref == 'release/prod'
         run: |
+          git fetch --tags
           if [ $(git tag -l ${{ env.IMAGE_VERSION }}) ]; then echo "Ya existe una version ${{ env.IMAGE_VERSION }} etiquetada"; exit 1; fi
       - name: Set Image Name and Version for Dev and Staging
         if: github.head_ref != 'release/prod'
