@@ -100,7 +100,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref == 'release/prod'
+    if: github.head_ref == 'release/prod' && github.event.pull_request.merged == true
     environment:
       name: Production
       url: 'https://environment.prod'
