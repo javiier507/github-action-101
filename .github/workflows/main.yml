@@ -94,7 +94,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: whoami
+          script: |
+            whoami
+            ls -al
 
   e2e-staging:
     runs-on: ubuntu-22.04
