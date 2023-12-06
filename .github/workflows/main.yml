@@ -37,6 +37,7 @@ jobs:
       - name: Print Version
         run: 'echo "${{ env.VERSION }}"'
       - id: versioning
+        name: Save Version
         run: echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
       - name: Check Tag
         if: github.head_ref == 'release/prod'
