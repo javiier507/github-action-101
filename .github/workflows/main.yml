@@ -45,26 +45,11 @@ jobs:
           echo "IMAGE_VERSION=$GITHUB_SHA" >> $GITHUB_ENV
       - name: Print Name and Version
         run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
-#      - name: Docker Login
-#        run: |
-#          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
-#      - name: Docker Build
-#        run: 'docker build -t ${{ env.IMAGE_NAME }} .'
-#      - name: Docker Tag
-#        run: >
-#          docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
-#
-#          docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
-#      - name: Docker Push
-#        run: >
-#          docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
-#
-#          docker push ${{ secrets.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
 
   deploy-dev:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref != 'release/prod'
+    if: github.head_ref != 'release/prod' && github.event.pull_request.merged == false
     environment:
       name: Dev
       url: 'https://environment.dev'
