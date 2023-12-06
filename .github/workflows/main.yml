@@ -68,7 +68,6 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-22.04
     needs: e2e-dev
-    if: github.event.pull_request.merged == true
     environment:
       name: Staging
       url: 'https://environment.staging'
