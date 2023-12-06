@@ -71,6 +71,7 @@ jobs:
     steps:
       - name: Deploy
         run: echo "Deploy in Dev!"
+
   e2e-dev:
     runs-on: ubuntu-22.04
     needs: deploy-dev
