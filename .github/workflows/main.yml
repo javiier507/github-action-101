@@ -16,28 +16,42 @@ jobs:
       PORT: ${{ vars.PORT }}
       APP_KEY: ${{ vars.APP_KEY }}
       DRIVE_DISK: ${{ vars.DRIVE_DISK }}
-    outputs:
-      version: ${{ steps.versioning.outputs.version }}
     steps:
       - uses: actions/checkout@v2
       - name: Install & Tests
         run: npm install && npm test
-      - id: versioning
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-  delivery:
+  versioning:
     runs-on: ubuntu-22.04
     needs: test
+    container:
+      image: 'node:18'
     env:
-      IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
-      IMAGE_VERSION: ${{ needs.test.outputs.version }}
+      VERSION: ''
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
     steps:
       - uses: actions/checkout@v2
+      - name: Get Version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+      - name: Print Version
+        run: 'echo "${{ env.VERSION }}"'
+      - id: versioning
+        run: echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
       - name: Check Tag
         if: github.head_ref == 'release/prod'
         run: |
           git fetch --tags
-          if [ $(git tag -l ${{ env.IMAGE_VERSION }}) ]; then echo "Ya existe una version ${{ env.IMAGE_VERSION }} etiquetada"; exit 1; fi
+          if [ $(git tag -l ${{ env.VERSION }}) ]; then echo "Ya existe una version ${{ env.VERSION }} etiquetada"; exit 1; fi
+
+  delivery:
+    runs-on: ubuntu-22.04
+    needs: versioning
+    env:
+      IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
+      IMAGE_VERSION: ${{ needs.versioning.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
       - name: Set Image Name and Version for Dev and Staging
         if: github.head_ref != 'release/prod'
         run: |
