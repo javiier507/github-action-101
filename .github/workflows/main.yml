@@ -23,6 +23,7 @@ jobs:
 
   versioning:
     runs-on: ubuntu-22.04
+    if: startsWith(github.head_ref, 'releases/')
     needs: test
     container:
       image: 'node:18'
@@ -37,6 +38,7 @@ jobs:
       - name: Print Version
         run: 'echo "${{ env.VERSION }}"'
       - id: versioning
+        name: Save Version
         run: echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
       - name: Check Tag
         if: github.head_ref == 'release/prod'
@@ -55,7 +57,6 @@ jobs:
       - name: Set Image Name and Version for Dev and Staging
         if: github.head_ref != 'release/prod'
         run: |
-          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}-dev" >> $GITHUB_ENV
           echo "IMAGE_VERSION=$GITHUB_SHA" >> $GITHUB_ENV
       - name: Print Name and Version
         run: 'echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}"'
