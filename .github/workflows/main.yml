@@ -48,6 +48,7 @@ jobs:
 
   delivery:
     runs-on: ubuntu-22.04
+    if: github.event.pull_request.merged == true
     needs: versioning
     env:
       IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
@@ -64,7 +65,7 @@ jobs:
   deploy-dev:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref != 'release/prod' && github.event.pull_request.merged == true
+    if: github.head_ref != 'release/prod'
     environment:
       name: Dev
       url: 'https://environment.dev'
@@ -109,7 +110,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref == 'release/prod' && github.event.pull_request.merged == true
+    if: github.head_ref == 'release/prod'
     environment:
       name: Production
       url: 'https://environment.prod'
