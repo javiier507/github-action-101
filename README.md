@@ -1,3 +1,3 @@
 # Github Action 101
 
-*Guide Project*
+*Example Project*
