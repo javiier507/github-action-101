@@ -28,7 +28,7 @@ jobs:
     container:
       image: 'node:18'
     env:
-      VERSION: ''
+      VERSION: 0
     outputs:
       version: ${{ steps.versioning.outputs.version }}
     steps:
