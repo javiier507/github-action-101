@@ -28,7 +28,7 @@ jobs:
     container:
       image: 'node:18'
     env:
-      VERSION: ''
+      VERSION: 0
     outputs:
       version: ${{ steps.versioning.outputs.version }}
     steps:
@@ -43,6 +43,7 @@ jobs:
       - name: Check Tag
         if: github.head_ref == 'release/prod'
         run: |
+          git config --global --add safe.directory /__w/github-action-101/github-action-101
           git fetch --tags
           if [ $(git tag -l ${{ env.VERSION }}) ]; then echo "Ya existe una version ${{ env.VERSION }} etiquetada"; exit 1; fi
 
