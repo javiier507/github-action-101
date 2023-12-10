@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "Hello",
+			"name": "Users",
 			"event": [
 				{
 					"listen": "test",
@@ -25,17 +25,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:3333/",
-					"protocol": "http",
+					"raw": "https://jsonplaceholder.typicode.com/users",
+					"protocol": "https",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"jsonplaceholder",
+						"typicode",
+						"com"
 					],
-					"port": "3333",
 					"path": [
-						""
+						"users"
 					]
 				}
 			},
