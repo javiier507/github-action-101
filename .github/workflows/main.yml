@@ -38,13 +38,13 @@ jobs:
   delivery:
     runs-on: ubuntu-22.04
     needs: build
-    if: ${{ startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true }}
+    if: ${{ startsWith(github.head_ref, 'deploy/') && github.event.pull_request.merged == true }}
     env:
       IMAGE_NAME: '${{ vars.IMAGE_NAME }}'
       IMAGE_TAG: ${{ needs.build.outputs.version }}
     steps:
-      # - name: Set Image Name and Version for Dev and Staging
-      #   if: github.head_ref == 'release/dev'
+      # - name: Set Image Name and Tag for Dev and Staging
+      #   if: github.head_ref == 'deploy/dev'
       #   run: |
       #     echo "IMAGE_TAG=$GITHUB_SHA" >> $GITHUB_ENV
       - name: Print Name and Tag
@@ -53,7 +53,7 @@ jobs:
   deploy-dev:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref == 'release/dev'
+    if: github.head_ref == 'deploy/dev'
     environment:
       name: Dev
       url: 'https://environment.dev'
@@ -105,7 +105,7 @@ jobs:
   deploy-prod:
     runs-on: ubuntu-22.04
     needs: delivery
-    if: github.head_ref == 'release/prod'
+    if: github.head_ref == 'deploy/prod'
     environment:
       name: Production
       url: 'https://environment.prod'
