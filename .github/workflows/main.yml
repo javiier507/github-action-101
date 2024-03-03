@@ -33,7 +33,8 @@ jobs:
         run: echo "${{ env.VERSION }}"
       - name: Check Version
         run: |
-          git pull origin --tags
+          git config --global --add safe.directory /__w/github-action-101/github-action-101
+          git fetch --tags
           echo "Current Tag: $(git describe --tags --abbrev=0)"
           if [ $(git describe --tags --abbrev=0) != $VERSION ]; then echo "Label and current version do not match"; exit 1; fi
       - id: versioning
