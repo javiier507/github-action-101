@@ -33,9 +33,9 @@ jobs:
         run: echo "${{ env.VERSION }}"
       - name: Check Version
         run: |
-          git fetch --tags
+          git pull origin --tags
           echo "Current Tag: $(git describe --tags --abbrev=0)"
-          if [ $(git describe --tags --abbrev=0) != ${{ env.VERSION }} ]; then echo "Label and current version do not match"; exit 1; fi
+          if [ $(git describe --tags --abbrev=0) != $VERSION ]; then echo "Label and current version do not match"; exit 1; fi
       - id: versioning
         name: Save Version
         run: echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
