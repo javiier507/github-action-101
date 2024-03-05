@@ -47,6 +47,9 @@ jobs:
       #   if: github.head_ref == 'deploy/dev'
       #   run: |
       #     echo "IMAGE_TAG=$GITHUB_SHA" >> $GITHUB_ENV
+      # If the image exists, overwriting must be avoided
+      - name: Check Image and Tag
+        run: echo bye | docker pull alpine:3.19.999999 && exit 1 || echo "Image with tag available!"
       - name: Print Name and Tag
         run: echo "${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
 
