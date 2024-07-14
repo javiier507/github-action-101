@@ -8,4 +8,4 @@ tmp
 .idea
 /github-action.secrets
 /github-action.variables
-newman
+/newman/
