@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/javiier507/github-action-101/compare/v1.0.0...v1.1.0) (2024-07-16)
+
+
+### Features
+
+* implementando feature 4 ([20789bd](https://github.com/javiier507/github-action-101/commit/20789bdbcc44883f71352c3801de2b1c9dfb5185))
+* implementando feature 5 ([955c5d4](https://github.com/javiier507/github-action-101/commit/955c5d4aeebdd5ec3fa45c86c8eb1ec3003b1f65))
+
 ## 1.0.0 (2024-07-16)
 
 
